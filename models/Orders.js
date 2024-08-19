@@ -1,12 +1,20 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../connection/connection'); 
+const User = require('./User');
 const Store = require('./Store');
 
-const Product = sequelize.define('Product', {
+const Order = sequelize.define('Order', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true
+  },
+  userId: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: User,
+      key: 'id'
+    }
   },
   storeId: {
     type: DataTypes.INTEGER,
@@ -15,26 +23,17 @@ const Product = sequelize.define('Product', {
       key: 'id'
     }
   },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false
+  orderDate: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   },
-  description: {
-    type: DataTypes.TEXT
-  },
-  price: {
+  totalAmount: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
   },
-  category: {
+  status: {
     type: DataTypes.STRING,
-    defaultValue: 'shoes'
-  },
-  imageUrl: {
-    type: DataTypes.TEXT
-  },
-  discount: {
-    type: DataTypes.DECIMAL(5, 2)
+    defaultValue: 'Pending'
   },
   createdAt: {
     type: DataTypes.DATE,
@@ -45,8 +44,8 @@ const Product = sequelize.define('Product', {
     defaultValue: DataTypes.NOW
   }
 }, {
-  tableName: 'products',
+  tableName: 'orders',
   timestamps: false
 });
 
-module.exports = Product;
+module.exports = Order;

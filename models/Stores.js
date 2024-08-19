@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../connection/connection'); // Adjust path as needed
-const User = require('./User'); // Import User model
+const sequelize = require('../connection/connection'); 
+const User = require('./User');
 
 const Store = sequelize.define('Store', {
   id: {
@@ -34,7 +34,7 @@ const Store = sequelize.define('Store', {
     defaultValue: DataTypes.NOW
   }
 }, {
-  tableName: 'Stores',
+  tableName: 'stores',
   timestamps: false
 });
 
