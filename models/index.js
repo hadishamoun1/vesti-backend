@@ -9,6 +9,8 @@ const Discount = require('./Discounts');
 const StoreCategory = require('./Store_Categories');
 
 
+
+
 User.hasMany(Store, { foreignKey: 'owner_id' });
 Store.belongsTo(User, { foreignKey: 'owner_id' });
 
