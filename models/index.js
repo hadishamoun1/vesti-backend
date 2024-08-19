@@ -3,10 +3,10 @@ const User = require('./User');
 const Store = require('./Store');
 const Product = require('./Product');
 const Order = require('./Order');
-const OrderItem = require('./OrderItem');
-const Notification = require('./Notification');
-const Discount = require('./Discount');
-const StoreCategory = require('./StoreCategory');
+const OrderItem = require('./Order_Items');
+const Notification = require('./Notifications');
+const Discount = require('./Discounts');
+const StoreCategory = require('./Store_Categories');
 
 
 User.hasMany(Store, { foreignKey: 'owner_id' });
