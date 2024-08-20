@@ -12,7 +12,7 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const discountRoutes = require("./routes/discountRoutes");
 const storeCategoryRoutes = require("./routes/storeCategoryRoutes");
 
-// Middleware
+
 app.use(bodyParser.json());
 
 // Use routes
@@ -25,14 +25,14 @@ app.use("/notifications", notificationRoutes);
 app.use("/discounts", discountRoutes);
 app.use("/store-categories", storeCategoryRoutes);
 
-// Error handling
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something broke!");
 });
 
-// Start server
-const PORT = process.env.PORT ;
+// Port 3000 
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
