@@ -9,8 +9,8 @@ router.post('/', async (req, res) => {
     const store = await Store.create(req.body);
     
     // Notify WebSocket clients about the new store
-    const clients = req.app.get('wss').clients;
-    clients.forEach(client => {
+    const wss = req.app.get('wss'); // Access WebSocket server
+    wss.clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify(store));
       }
