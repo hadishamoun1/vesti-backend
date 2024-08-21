@@ -22,10 +22,16 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Get all stores
+
+// Get all stores with optional limit
 router.get('/', async (req, res) => {
   try {
-    const stores = await Store.findAll();
+    // Get the limit from the query parameters
+    const limit = parseInt(req.query.limit, 10) || null; // Default to null if not provided
+    
+    // Fetch stores with or without limit
+    const stores = limit ? await Store.findAll({ limit }) : await Store.findAll();
+    
     res.json(stores);
   } catch (error) {
     res.status(400).json({ error: error.message });
