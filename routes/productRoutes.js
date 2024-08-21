@@ -12,6 +12,19 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Get products by category
+router.get('/category/:categoryName', async (req, res) => {
+  try {
+    const { categoryName } = req.params;
+    const products = await Product.findAll({
+      where: { category: categoryName }
+    });
+    res.json(products);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // Get all products
 router.get('/', async (req, res) => {
   try {
