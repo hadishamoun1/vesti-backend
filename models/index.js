@@ -8,41 +8,49 @@ const Notification = require('./Notifications');
 const Discount = require('./Discounts');
 const StoreCategory = require('./Store_Categories');
 
+// User and Store Association
+User.hasMany(Store, { foreignKey: 'ownerId' }); // Align with Store model's ownerId
+Store.belongsTo(User, { foreignKey: 'ownerId' });
 
+// Store and Product Association
+Store.hasMany(Product, { foreignKey: 'storeId' }); // Align with Product model's storeId
+Product.belongsTo(Store, { foreignKey: 'storeId' });
 
+// User and Order Association
+User.hasMany(Order, { foreignKey: 'userId' });
+Order.belongsTo(User, { foreignKey: 'userId' });
 
-User.hasMany(Store, { foreignKey: 'owner_id' });
-Store.belongsTo(User, { foreignKey: 'owner_id' });
+// Store and Order Association
+Store.hasMany(Order, { foreignKey: 'storeId' });
+Order.belongsTo(Store, { foreignKey: 'storeId' });
 
-Store.hasMany(Product, { foreignKey: 'store_id' });
-Product.belongsTo(Store, { foreignKey: 'store_id' });
+// Order and OrderItem Association
+Order.hasMany(OrderItem, { foreignKey: 'orderId' });
+OrderItem.belongsTo(Order, { foreignKey: 'orderId' });
 
-User.hasMany(Order, { foreignKey: 'user_id' });
-Order.belongsTo(User, { foreignKey: 'user_id' });
+// Product and OrderItem Association
+Product.hasMany(OrderItem, { foreignKey: 'productId' });
+OrderItem.belongsTo(Product, { foreignKey: 'productId' });
 
-Store.hasMany(Order, { foreignKey: 'store_id' });
-Order.belongsTo(Store, { foreignKey: 'store_id' });
+// User and Notification Association
+User.hasMany(Notification, { foreignKey: 'userId' });
+Notification.belongsTo(User, { foreignKey: 'userId' });
 
-Order.hasMany(OrderItem, { foreignKey: 'order_id' });
-OrderItem.belongsTo(Order, { foreignKey: 'order_id' });
+// Store and Notification Association
+Store.hasMany(Notification, { foreignKey: 'storeId' });
+Notification.belongsTo(Store, { foreignKey: 'storeId' });
 
-Product.hasMany(OrderItem, { foreignKey: 'product_id' });
-OrderItem.belongsTo(Product, { foreignKey: 'product_id' });
+// Store and Discount Association
+Store.hasMany(Discount, { foreignKey: 'storeId' });
+Discount.belongsTo(Store, { foreignKey: 'storeId' });
 
-User.hasMany(Notification, { foreignKey: 'user_id' });
-Notification.belongsTo(User, { foreignKey: 'user_id' });
+// Product and Discount Association
+Product.hasMany(Discount, { foreignKey: 'productId' });
+Discount.belongsTo(Product, { foreignKey: 'productId' });
 
-Store.hasMany(Notification, { foreignKey: 'store_id' });
-Notification.belongsTo(Store, { foreignKey: 'store_id' });
-
-Store.hasMany(Discount, { foreignKey: 'store_id' });
-Discount.belongsTo(Store, { foreignKey: 'store_id' });
-
-Product.hasMany(Discount, { foreignKey: 'product_id' });
-Discount.belongsTo(Product, { foreignKey: 'product_id' });
-
-Store.hasMany(StoreCategory, { foreignKey: 'store_id' });
-StoreCategory.belongsTo(Store, { foreignKey: 'store_id' });
+// Store and StoreCategory Association
+Store.hasMany(StoreCategory, { foreignKey: 'storeId' });
+StoreCategory.belongsTo(Store, { foreignKey: 'storeId' });
 
 module.exports = {
   User,
