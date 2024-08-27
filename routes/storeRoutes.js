@@ -48,19 +48,26 @@ router.get("/nearby", async (req, res) => {
         .json({ error: "Latitude and longitude are required" });
     }
 
-    
     const latitude = parseFloat(lat);
     const longitude = parseFloat(lon);
+    const limitValue = parseInt(limit, 10) || 10; // Defaults to 10 if not provided
+    const radius = parseFloat(req.query.radius); // Defaults to 5000 if not provided
 
     if (isNaN(latitude) || isNaN(longitude)) {
       return res.status(400).json({ error: "Invalid latitude or longitude" });
     }
 
-   
-    const radius = parseFloat(req.query.radius) || 5000; 
-    const limitValue = parseInt(limit, 10) || 10; 
+    if (isNaN(limitValue)) {
+      return res.status(400).json({ error: "Limit must be a number" });
+    }
 
-    
+    if (isNaN(radius)) {
+      return res.status(400).json({ error: "Radius must be a number" });
+    }
+
+    // Log the bind parameters for debugging
+    console.log("Query Parameters:", [longitude, latitude, radius, limitValue]);
+
     const query = `
       SELECT id, name, 
              ST_Distance(
@@ -76,7 +83,6 @@ router.get("/nearby", async (req, res) => {
       LIMIT $4;
     `;
 
-    // Execute raw query
     const stores = await sequelize.query(query, {
       bind: [longitude, latitude, radius, limitValue],
       type: sequelize.QueryTypes.SELECT,
@@ -84,6 +90,7 @@ router.get("/nearby", async (req, res) => {
 
     res.json(stores);
   } catch (error) {
+    console.error("Error executing query:", error.message);
     res.status(400).json({ error: error.message });
   }
 });
