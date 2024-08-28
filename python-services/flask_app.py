@@ -1,40 +1,42 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from feature_extraction import extract_features
 import os
 
-app = Flask(__name__)
-CORS(app)  # Allow CORS for all origins
+app = FastAPI()
+
+# Allow CORS for all origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Define paths
 UPLOAD_FOLDER = 'uploads'
 TEMP_FOLDER = 'temp'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['TEMP_FOLDER'] = TEMP_FOLDER
-
-# Ensure directories exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(TEMP_FOLDER, exist_ok=True)
-@app.route('/',methods=['GET'])
-def home():
-    return "Flask is working!"
 
-@app.route('/upload', methods=['POST'])
-def upload_image():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
+@app.get("/")
+def read_root():
+    return {"message": "FastAPI is working!"}
 
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-
-    # Save the file to the uploads folder
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-    file.save(file_path)
-
-    # Process the image to extract features
-    features = extract_features(file_path)
-    return jsonify({'features': features})
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+@app.post("/upload")
+async def upload_image(file: UploadFile = File(...)):
+    if not file:
+        raise HTTPException(status_code=400, detail="No file part")
+    
+    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    with open(file_path, "wb") as buffer:
+        buffer.write(await file.read())
+    
+    try:
+        features = extract_features(file_path)
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+    
+    return {"features": features}
