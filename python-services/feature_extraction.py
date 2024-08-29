@@ -14,4 +14,4 @@ def extract_features(img_path):
     img_array = preprocess_input(img_array)
 
     features = model.predict(img_array)
-    return features.tolist()  # Convert numpy array to list for JSON response
+    return features.tolist() 

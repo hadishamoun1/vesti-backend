@@ -46,6 +46,9 @@ const Product = sequelize.define(
       type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: false,
     },
+    imageFeatures: {
+      type: "VECTOR(512)",  
+    },
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
