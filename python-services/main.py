@@ -47,15 +47,12 @@ async def upload_image(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
     
-    # Extract features from images in both folders
     try:
         upload_features, upload_filenames = extract_features_from_folder(UPLOAD_FOLDER)
         temp_features, temp_filenames = extract_features_from_folder(TEMP_FOLDER)
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
     
-    # Save features and filenames to temporary files or databases if needed
-    # Here, we are just preparing the response
 
     return {
         "upload_features": upload_features,
