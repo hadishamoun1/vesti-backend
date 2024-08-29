@@ -3,6 +3,8 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from feature_extraction import extract_features
 import os
+import numpy as np
+import json
 
 app = FastAPI()
 
@@ -25,6 +27,17 @@ os.makedirs(TEMP_FOLDER, exist_ok=True)
 def read_root():
     return {"message": "FastAPI is working!"}
 
+def extract_features_from_folder(folder_path):
+    features_list = []
+    filenames = []
+    for filename in os.listdir(folder_path):
+        if filename.endswith(('.jpg', '.jpeg', '.png')):
+            file_path = os.path.join(folder_path, filename)
+            features = extract_features(file_path)
+            features_list.append(features)
+            filenames.append(filename)
+    return features_list, filenames
+
 @app.post("/upload")
 async def upload_image(file: UploadFile = File(...)):
     if not file:
@@ -34,9 +47,19 @@ async def upload_image(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
     
+    # Extract features from images in both folders
     try:
-        features = extract_features(file_path)
+        upload_features, upload_filenames = extract_features_from_folder(UPLOAD_FOLDER)
+        temp_features, temp_filenames = extract_features_from_folder(TEMP_FOLDER)
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
     
-    return {"features": features}
+    # Save features and filenames to temporary files or databases if needed
+    # Here, we are just preparing the response
+
+    return {
+        "upload_features": upload_features,
+        "upload_filenames": upload_filenames,
+        "temp_features": temp_features,
+        "temp_filenames": temp_filenames
+    }
