@@ -18,9 +18,42 @@ pose = mp_pose.Pose()
 
 UPLOAD_DIR = "uploads"
 TEMP_DIR = "temp"
+UPLOAD_TEMP_DIR = "uploads_temp"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(TEMP_DIR, exist_ok=True)
+
+def extract_keypoints(results):
+    keypoints = []
+    if results.pose_landmarks:
+        for landmark in results.pose_landmarks.landmark:
+            keypoints.append({
+                'x': landmark.x,
+                'y': landmark.y,
+                'z': landmark.z
+            })
+    return keypoints
+
+
+def overlay_clothing_on_user(user_image: np.ndarray, clothing_image: np.ndarray, keypoints: list) -> np.ndarray:
+    # Convert user and clothing images to the same size
+    user_height, user_width, _ = user_image.shape
+    clothing_resized = cv2.resize(clothing_image, (user_width, user_height))
+
+    # Create a mask for the clothing image
+    mask = np.zeros((user_height, user_width), dtype=np.uint8)
+    for kp in keypoints:
+        x = int(kp['x'] * user_width)
+        y = int(kp['y'] * user_height)
+        cv2.circle(mask, (x, y), 10, (255), -1)  # Draw circles around keypoints
+
+    # Use the mask to overlay clothing image onto user image
+    clothing_masked = cv2.bitwise_and(clothing_resized, clothing_resized, mask=mask)
+    user_masked = cv2.bitwise_and(user_image, user_image, mask=cv2.bitwise_not(mask))
+    final_image = cv2.add(user_masked, clothing_masked)
+
+    return final_image
+
 
 @app.post("/upload/")
 async def upload_image(file: UploadFile = File(...)):
@@ -54,6 +87,14 @@ async def add_upload(file: UploadFile = File(...)):
     return {"filename": file.filename}
 
 
+@app.post("/upload-img/")
+async def add_upload(file: UploadFile = File(...)):
+    # Save uploaded file to uploads directory
+    upload_file_path = os.path.join(UPLOAD_TEMP_DIR, file.filename)
+    with open(upload_file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    return {"filename": file.filename}
+
 @app.post("/process-image/")
 async def process_image(image: UploadFile = File(...)):
     # Read the uploaded image
@@ -68,13 +109,40 @@ async def process_image(image: UploadFile = File(...)):
     results = pose.process(image_rgb)
 
     # Extract keypoints
-    keypoints = []
-    if results.pose_landmarks:
-        for landmark in results.pose_landmarks.landmark:
-            keypoints.append({
-                'x': landmark.x,
-                'y': landmark.y,
-                'z': landmark.z
-            })
+    keypoints = extract_keypoints(results)
 
     return {"keypoints": keypoints}
+
+@app.post("/virtual-try-on/")
+async def virtual_try_on(user_image: UploadFile = File(...), clothing_image: UploadFile = File(...)):
+    # Read and process the user image
+    user_image_data = await user_image.read()
+    user_image_pil = Image.open(io.BytesIO(user_image_data))
+    user_image_np = np.array(user_image_pil)
+    user_image_rgb = cv2.cvtColor(user_image_np, cv2.COLOR_BGR2RGB)
+    
+    # Perform pose estimation
+    results = pose.process(user_image_rgb)
+    user_keypoints = extract_keypoints(results)
+
+    # Read and process the clothing image
+    clothing_image_data = await clothing_image.read()
+    clothing_image_pil = Image.open(io.BytesIO(clothing_image_data))
+    clothing_image_np = np.array(clothing_image_pil)
+    
+    # Perform feature extraction for clothing
+    clothing_features = extract_features(clothing_image_np)
+    
+    # Match clothing features to user pose (implementation-specific)
+    # This might involve warping the clothing image based on keypoints
+
+    # Generate the final image with clothing overlaid
+    final_image = overlay_clothing_on_user(user_image_np, clothing_image_np, user_keypoints)
+    
+    # Convert final image to bytes
+    final_image_pil = Image.fromarray(final_image)
+    buffered = io.BytesIO()
+    final_image_pil.save(buffered, format="PNG")
+    img_str = buffered.getvalue()
+
+    return JSONResponse(content={"image": img_str})
