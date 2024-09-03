@@ -81,6 +81,8 @@ def overlay_clothing_on_user(user_image: np.ndarray, clothing_image: np.ndarray,
     scaled_bbox_width = int(bbox_width * scale_factor)
     scaled_bbox_height = int(bbox_height * scale_factor)
 
+    print(scaled_bbox_width, scaled_bbox_height)
+
     # Resize clothing image to fit the scaled bounding box
     clothing_resized = cv2.resize(clothing_image, (scaled_bbox_width, scaled_bbox_height))
 
@@ -119,8 +121,6 @@ def overlay_clothing_on_user(user_image: np.ndarray, clothing_image: np.ndarray,
 
     return combined_bgr
 
-
-
 @app.post("/upload/")
 async def upload_image(file: UploadFile = File(...)):
     temp_file_path = os.path.join(TEMP_DIR, file.filename)
@@ -130,19 +130,30 @@ async def upload_image(file: UploadFile = File(...)):
     temp_features = extract_features(temp_file_path)
     
     similar_images = []
+    db_features = []  # This will hold features of images in UPLOAD_DIR
+
+    # Extract features for all images in the uploads directory
     for image_file in os.listdir(UPLOAD_DIR):
         image_path = os.path.join(UPLOAD_DIR, image_file)
         features = extract_features(image_path)
-        if features.size == 0:
-            continue
-        
-        indices = search_similar_images(temp_features, np.array([features]))
-        if len(indices) > 0:
-            similar_images.append(image_file)
+        if features.size > 0:
+            db_features.append(features)
+
+    db_features = np.array(db_features)
+
+    # Search for similar images
+    indices = search_similar_images(temp_features, db_features)
+    
+    if len(indices) > 0:
+        # Map indices back to image filenames
+        for index in indices:
+            if index < len(os.listdir(UPLOAD_DIR)):
+                similar_images.append(os.listdir(UPLOAD_DIR)[index])
 
     os.remove(temp_file_path)
     
     return JSONResponse(content={"similar_images": similar_images})
+
 
 @app.post("/add-upload/")
 async def add_upload(file: UploadFile = File(...)):
