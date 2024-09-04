@@ -80,4 +80,22 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// Get products by storeId
+router.get("/store/:storeId", async (req, res) => {
+  try {
+    const { storeId } = req.params;
+    const products = await Product.findAll({
+      where: { storeId: storeId },
+    });
+    if (products.length > 0) {
+      res.json(products);
+    } else {
+      res.status(404).json({ error: "No products found for this store" });
+    }
+  } catch (error) {
+    console.error("Error fetching products by storeId:", error); // Log the error
+    res.status(400).json({ error: error.message });
+  }
+});
+
 module.exports = router;
