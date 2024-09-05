@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
         email,
         password,
         phoneNumber,
-        location: sequelize.literal(point), // Use sequelize.literal to handle raw SQL expressions
+        location: sequelize.literal(point), 
       });
       res.status(201).json(user);
     } catch (error) {
