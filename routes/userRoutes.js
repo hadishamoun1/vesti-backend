@@ -7,20 +7,25 @@ const sequelize = require('../connection/connection');
 router.post("/", async (req, res) => {
   const { name, email, password, phoneNumber, location } = req.body;
 
-  // Check if location is provided
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
+
   if (location && Array.isArray(location) && location.length === 2) {
     const [longitude, latitude] = location.map((coord) => parseFloat(coord));
-
-    // Create a POINT geometry using ST_SetSRID and ST_MakePoint
     const point = `ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)`;
 
     try {
+      
+      const hashedPassword = await bcrypt.hash(password, 10);
+
       const user = await User.create({
         name,
         email,
-        password,
+        password: hashedPassword,  
         phoneNumber,
-        location: sequelize.literal(point), 
+        location: sequelize.literal(point),
       });
       res.status(201).json(user);
     } catch (error) {
