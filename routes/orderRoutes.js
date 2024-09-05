@@ -66,7 +66,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-app.get('/history/:userId', async (req, res) => {
+router.get('/history/:userId', async (req, res) => {
   const userId = req.params.userId; 
 
   try {
