@@ -1,40 +1,34 @@
 const express = require("express");
 const router = express.Router();
 const { User } = require("../models/index");
-const sequelize = require('../connection/connection');
-const bcrypt = require('bcrypt'); 
+const sequelize = require("../connection/connection");
+const bcrypt = require("bcrypt");
 
 // Create a new user
 router.post("/", async (req, res) => {
-  const { name, email, password, phoneNumber, location } = req.body;
+  const { name, email, password, phoneNumber } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password are required" });
   }
 
+  try {
+  
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-  if (location && Array.isArray(location) && location.length === 2) {
-    const [longitude, latitude] = location.map((coord) => parseFloat(coord));
-    const point = `ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)`;
+  
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      phoneNumber,
+    });
 
-    try {
-      
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      const user = await User.create({
-        name,
-        email,
-        password: hashedPassword,  
-        phoneNumber,
-        location: sequelize.literal(point),
-      });
-      res.status(201).json(user);
-    } catch (error) {
-      console.error(error);
-      res.status(500).send("Error creating user");
-    }
-  } else {
-    res.status(400).send("Invalid location format");
+  
+    res.status(201).json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error creating user");
   }
 });
 
