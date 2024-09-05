@@ -66,4 +66,22 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+app.get('/history/:userId', async (req, res) => {
+  const userId = req.params.userId; 
+
+  try {
+    
+    const orders = await Order.findAll({
+      where: {
+        userId: userId,
+        status: 'paid'
+      }
+    });
+
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch orders' });
+  }
+});
+
 module.exports = router;
