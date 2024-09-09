@@ -24,9 +24,11 @@ const Store = sequelize.define(
 
     location: {
       type: DataTypes.GEOMETRY("POINT"),
+      allowNull: true,
     },
     pictureUrl: {
       type: DataTypes.TEXT,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,

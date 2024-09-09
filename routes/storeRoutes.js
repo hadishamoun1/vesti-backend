@@ -4,11 +4,12 @@ const { Store } = require("../models/index");
 const WebSocket = require("ws");
 const { Op, fn, col, literal } = require("sequelize");
 const sequelize = require("../connection/connection");
+const authMiddleware = require('../middleware/authMiddleware');
 
 const RADIUS_IN_METERS = 50; // Define the radius for nearby stores (e.g., 5 km)
 
 // Create a new store
-router.post("/", async (req, res) => {
+router.post("/", authMiddleware,async (req, res) => {
   try {
     const store = await Store.create(req.body);
 
