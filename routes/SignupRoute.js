@@ -7,7 +7,7 @@ const Store = require('../models/Store');
 const router = express.Router();
 
 // Signup route
-router.post('/signup', async (req, res) => {
+router.post('/', async (req, res) => {
   const { name, email, password, phoneNumber } = req.body;
 
   try {

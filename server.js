@@ -13,6 +13,7 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const discountRoutes = require("./routes/discountRoutes");
 const storeCategoryRoutes = require("./routes/storeCategoryRoutes");
 const loginRoutes = require("./routes/loginRoute");
+const signRoutes = require("../routes/signupRoute");
 
 const app = express();
 const server = http.createServer(app);
@@ -33,6 +34,7 @@ app.use("/notifications", notificationRoutes);
 app.use("/discounts", discountRoutes);
 app.use("/store-categories", storeCategoryRoutes);
 app.use("/login", loginRoutes);
+app.use("/signup", signRoutes);
 
 // WebSocket connection handling
 wss.on("connection", (ws) => {
