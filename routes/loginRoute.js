@@ -63,7 +63,7 @@ router.post("/store", async (req, res) => {
     const store = await Store.findOne({ where: { ownerId: user.id } });
 
     if (!store) {
-      return res.status(400).json({ message: "User is not a store owner" });
+      return res.status(400).json({ message: "You are not a store owner" });
     }
 
     // Generate a JWT token
