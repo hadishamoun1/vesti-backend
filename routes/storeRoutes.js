@@ -4,12 +4,14 @@ const { Store } = require("../models/index");
 const WebSocket = require("ws");
 const { Op, fn, col, literal } = require("sequelize");
 const sequelize = require("../connection/connection");
-const authMiddleware = require('../middleware/authMiddleware');
+const authMiddleware = require("../middleware/authMiddleware");
+const multer = require("multer");
+const path = require("path");
 
 const RADIUS_IN_METERS = 50; // Define the radius for nearby stores (e.g., 5 km)
 
 // Create a new store
-router.post("/", authMiddleware,async (req, res) => {
+router.post("/", authMiddleware, async (req, res) => {
   try {
     const store = await Store.create(req.body);
 
@@ -132,6 +134,55 @@ router.delete("/:id", async (req, res) => {
     if (store) {
       await store.destroy();
       res.status(204).end();
+    } else {
+      res.status(404).json({ error: "Store not found" });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Set up storage for the images
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // Folder where images will be saved
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname)); // Save file with unique name
+  },
+});
+
+// Initialize multer with storage configuration
+const upload = multer({ storage: storage });
+
+// Route to update a store by ID with an image upload
+// Route to update a store by ID with an image upload
+router.put("/update/:id", upload.single("picture"), async (req, res) => {
+  try {
+    console.log("Request File:", req.file); // Check if file is received
+    console.log("Request Body:", req.body); // Check if body data is received
+
+    // Find the store by ID
+    const store = await Store.findByPk(req.params.id);
+
+    if (store) {
+      // Prepare update data
+      const updateData = {};
+
+      // If there's an image in the request, update the pictureUrl
+      if (req.file) {
+        updateData.pictureUrl = `/uploads/${req.file.filename}`; // Set the pictureUrl path
+      }
+
+      // Update the store with new data from req.body
+      if (req.body.name) updateData.name = req.body.name;
+      if (req.body.description) updateData.description = req.body.description;
+      if (req.body.location) updateData.location = req.body.location;
+
+      // Apply the updates
+      await store.update(updateData);
+      res.json(store);
     } else {
       res.status(404).json({ error: "Store not found" });
     }
