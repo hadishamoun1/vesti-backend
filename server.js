@@ -30,25 +30,23 @@ app.use(bodyParser.json());
 
 app.use(
   cors({
-    origin: "http://localhost:3001", // Replace with your frontend URL
+    origin: "http://localhost:3001",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
 
-// Secure HTTP headers with helmet, but allow specific cross-origin resource policies
 app.use(
   helmet({
-    crossOriginResourcePolicy: false, // Allow cross-origin resources
+    crossOriginResourcePolicy: false,
   })
 );
 
-// Limit requests to avoid DOS attacks
 app.use(
   rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 100,
   })
 );
 
@@ -70,7 +68,7 @@ app.use(
   (req, res, next) => {
     res.header("Access-Control-Allow-Origin", "http://localhost:3001");
     res.header("Access-Control-Allow-Methods", "GET");
-    res.header("Cross-Origin-Resource-Policy", "cross-origin"); // Allow cross-origin resource sharing for images
+    res.header("Cross-Origin-Resource-Policy", "cross-origin");
     next();
   },
   express.static(path.join(__dirname, "uploads"))
@@ -103,7 +101,7 @@ app.use((err, req, res, next) => {
 
 // Graceful shutdown
 server.on("close", async () => {
-  const { sequelize } = require("./models"); // Adjust path as necessary
+  const { sequelize } = require("./models");
   await sequelize.close();
   console.log("Database connection closed");
 });
