@@ -6,6 +6,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
+const path = require("path");
 
 // Import routes
 const userRoutes = require("./routes/userRoutes");
@@ -26,14 +27,24 @@ const wss = new WebSocket.Server({ server });
 
 // Apply middlewares
 app.use(bodyParser.json());
+
 app.use(
   cors({
     origin: "http://localhost:3001", // Replace with your frontend URL
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
-app.use(helmet()); // Secure HTTP headers
+
+// Secure HTTP headers with helmet, but allow specific cross-origin resource policies
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false, // Allow cross-origin resources
+  })
+);
+
+// Limit requests to avoid DOS attacks
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -52,6 +63,18 @@ app.use("/discounts", discountRoutes);
 app.use("/store-categories", storeCategoryRoutes);
 app.use("/login", loginRoutes);
 app.use("/signup", signupRoutes);
+
+// Serve static files from /uploads with appropriate CORS headers
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.header("Access-Control-Allow-Methods", "GET");
+    res.header("Cross-Origin-Resource-Policy", "cross-origin"); // Allow cross-origin resource sharing for images
+    next();
+  },
+  express.static(path.join(__dirname, "uploads"))
+);
 
 // WebSocket connection handling
 wss.on("connection", (ws, req) => {
