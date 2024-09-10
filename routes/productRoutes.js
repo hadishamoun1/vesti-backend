@@ -98,4 +98,18 @@ router.get("/store/:storeId", async (req, res) => {
   }
 });
 
+// Route to get products by storeId
+router.get('/products/:storeId', async (req, res) => {
+  const { storeId } = req.params;
+
+  try {
+    const products = await Product.findAll({ where: { storeId } });
+    res.json(products);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while fetching products.' });
+  }
+});
+
+
 module.exports = router;
