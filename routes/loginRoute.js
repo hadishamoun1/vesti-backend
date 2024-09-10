@@ -67,7 +67,7 @@ router.post("/store", async (req, res) => {
     }
 
     // Generate a JWT token
-    const token = jwt.sign({ userId: user.id }, SECRET_KEY, {
+    const token = jwt.sign({ userId: user.id, storeId: store.id }, SECRET_KEY, {
       expiresIn: "7d",
     });
 
