@@ -23,7 +23,7 @@ const Store = sequelize.define(
     },
     description: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
 
     location: {
