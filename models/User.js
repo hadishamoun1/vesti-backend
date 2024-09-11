@@ -25,7 +25,14 @@ const User = sequelize.define(
     phoneNumber: {
       type: DataTypes.STRING,
     },
-
+    role: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: "user",
+      validate: {
+        isIn: [["user", "admin"]],
+      },
+    },
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
