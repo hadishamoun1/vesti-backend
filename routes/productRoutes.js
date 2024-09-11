@@ -77,6 +77,23 @@ router.get("/category/:categoryName", async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+// Get products by category and storeId
+router.get("/category", async (req, res) => {
+  try {
+    const { category, storeId } = req.query;
+    const products = await Product.findAll({
+      where: {
+        category: category,
+        storeId: storeId,
+      },
+    });
+
+    // Ensure that products is an array
+    res.json(Array.isArray(products) ? products : []);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 // Get all products
 router.get("/", async (req, res) => {
@@ -162,6 +179,58 @@ router.get("/products/:storeId", async (req, res) => {
     res
       .status(500)
       .json({ error: "An error occurred while fetching products." });
+  }
+});
+
+// Function to update discount in the database
+const updateDiscountInDatabase = async (storeId, itemId, discount) => {
+  try {
+    // Find the product
+    const product = await Product.findOne({
+      where: { id: itemId, storeId: storeId },
+    });
+
+    if (!product) {
+      return { success: false, message: "Product not found" };
+    }
+
+    // Update the discount field (assuming you have a discount field in your Product model)
+    product.discount = discount;
+
+    // Save the updated product
+    await product.save();
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating discount in database:", error);
+    return { success: false, message: "Database update error" };
+  }
+};
+
+router.post("/discounts/update", async (req, res) => {
+  const { storeId, itemId, discount } = req.body;
+
+  if (!storeId || !itemId || !discount) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  try {
+    const result = await updateDiscountInDatabase(storeId, itemId, discount);
+
+    if (result.success) {
+      return res
+        .status(200)
+        .json({ message: "Discount updated successfully!" });
+    } else {
+      return res
+        .status(500)
+        .json({ message: result.message || "Failed to update discount" });
+    }
+  } catch (error) {
+    console.error("Error updating discount:", error);
+    return res
+      .status(500)
+      .json({ message: "An error occurred while updating the discount." });
   }
 });
 
