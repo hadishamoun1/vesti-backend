@@ -63,8 +63,10 @@ app.use("/store-categories", storeCategoryRoutes);
 app.use("/login", loginRoutes);
 app.use("/signup", signupRoutes);
 app.use("/admin", adminRoutes);
-
-
+app.use(
+  "/productImages",
+  express.static(path.join(__dirname, "productImages"))
+);
 
 // Serve static files from /uploads with appropriate CORS headers
 app.use(

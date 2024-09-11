@@ -4,19 +4,26 @@ const path = require("path");
 const { Product, Discount, User, Notification } = require("../models/index");
 const multer = require("multer");
 
+// Set up storage for the product images
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "productImages/");
+  destination: function (req, file, cb) {
+    cb(null, "productImages/"); // Folder where images will be saved
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname)); // Save file with unique name
   },
 });
 
-const upload = multer({ storage });
+// Initialize multer with storage configuration
+const upload = multer({ storage: storage });
 
+// Route to create a new product with an image upload
 router.post("/create", upload.single("picture"), async (req, res) => {
   try {
+    console.log("Request File:", req.file); // Check if file is received
+    console.log("Request Body:", req.body); // Check if body data is received
+
     const {
       storeId,
       name,
@@ -27,28 +34,17 @@ router.post("/create", upload.single("picture"), async (req, res) => {
       availableSizes,
     } = req.body;
 
-    // Ensure that all required fields are present
     if (!name || !description || !price || !category || !storeId) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
-    // Ensure that availableColors and availableSizes are in the correct format
     const colors = availableColors ? availableColors.split(",") : [];
     const sizes = availableSizes ? availableSizes.split(",") : [];
 
-    const imageUrl = req.file ? req.file.path : null;
+    const imageUrl = req.file ? `/productImages/${req.file.filename}` : null;
 
-    // Convert storeId to integer
-    const storeIdInt = parseInt(storeId, 10);
-
-    // Ensure storeId is a valid number
-    if (isNaN(storeIdInt)) {
-      return res.status(400).json({ message: "Invalid storeId." });
-    }
-
-    // Create the product
     const product = await Product.create({
-      storeId: storeIdInt,
+      storeId: parseInt(storeId, 10),
       name,
       description,
       price,
