@@ -7,6 +7,7 @@ require("dotenv").config();
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
+// General login route
 router.post("/", async (req, res) => {
   const { email, password } = req.body;
 
@@ -27,7 +28,7 @@ router.post("/", async (req, res) => {
     }
 
     // Generate a JWT token
-    const token = jwt.sign({ userId: user.id }, SECRET_KEY, {
+    const token = jwt.sign({ userId: user.id, role: user.role }, SECRET_KEY, {
       expiresIn: "7d",
     });
 
@@ -38,6 +39,7 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Store-specific login route
 router.post("/store", async (req, res) => {
   const { email, password } = req.body;
 
@@ -59,16 +61,19 @@ router.post("/store", async (req, res) => {
       return res.status(400).json({ message: "Incorrect password" });
     }
 
-    // Check if the user is also a store owner
-    const store = await Store.findOne({ where: { ownerId: user.id } });
+    // If user is not an admin, check if they are a store owner
+    let store = null;
+    if (user.role !== "admin") {
+      store = await Store.findOne({ where: { ownerId: user.id } });
 
-    if (!store) {
-      return res.status(400).json({ message: "You are not a store owner" });
+      if (!store) {
+        return res.status(400).json({ message: "You are not a store owner" });
+      }
     }
 
     // Generate a JWT token
     const token = jwt.sign(
-      { userId: user.id, storeId: store.id, role: user.role },
+      { userId: user.id, role: user.role, storeId: store ? store.id : null },
       SECRET_KEY,
       {
         expiresIn: "7d",
@@ -83,11 +88,14 @@ router.post("/store", async (req, res) => {
         email: user.email,
         name: user.name,
       },
-      store: {
-        id: store.id,
-        name: store.name,
-        location: store.location,
-      },
+      store: store
+        ? {
+           
+            id: store.id,
+            name: store.name,
+            location: store.location,
+          }
+        : null,
     });
   } catch (error) {
     console.error(error);
