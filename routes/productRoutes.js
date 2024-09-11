@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const path = require("path");
-const { Product, Discount } = require("../models/index");
+const { Product, Discount, User, Notification } = require("../models/index");
 const multer = require("multer");
 
 const storage = multer.diskStorage({
@@ -213,18 +213,17 @@ router.post("/discounts/update", async (req, res) => {
 
     const notifications = users.map((user) => ({
       userId: user.id,
+      storeId: storeId,
       discountId: newDiscount.id,
       message: `New discount on product ${product.name}: ${discount}% off!`,
     }));
 
     await Notification.bulkCreate(notifications);
 
-    res
-      .status(200)
-      .json({
-        message: "Discount updated and notifications sent successfully!",
-        discount: newDiscount,
-      });
+    res.status(200).json({
+      message: "Discount updated and notifications sent successfully!",
+      discount: newDiscount,
+    });
   } catch (error) {
     console.error("Error updating discount:", error);
     res.status(500).json({ message: "Error updating discount." });
