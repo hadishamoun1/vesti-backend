@@ -30,18 +30,15 @@ const Discount = sequelize.define(
       allowNull: false,
     },
     active: {
-      type: DataTypes.BOOLEAN, // Updated to BOOLEAN
-      allowNull: false, // Ensure this field is not nullable
-      defaultValue: true, // Default to true if not specified
+      type: DataTypes.STRING, 
+      allowNull: false, 
+      defaultValue: true,
     },
     startDate: {
       type: DataTypes.DATE,
       allowNull: false,
     },
-    endDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
+   
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

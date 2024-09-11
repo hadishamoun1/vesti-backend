@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const path = require("path");
-const { Product } = require("../models/index");
+const { Product, Discount } = require("../models/index");
 const multer = require("multer");
 
 const storage = multer.diskStorage({
@@ -182,55 +182,52 @@ router.get("/products/:storeId", async (req, res) => {
   }
 });
 
-// Function to update discount in the database
-const updateDiscountInDatabase = async (storeId, itemId, discount) => {
+router.post("/discounts/update", async (req, res) => {
   try {
-    // Find the product
-    const product = await Product.findOne({
-      where: { id: itemId, storeId: storeId },
-    });
+    const { storeId, itemId, discount } = req.body;
 
-    if (!product) {
-      return { success: false, message: "Product not found" };
+    if (!storeId || !itemId || discount === undefined) {
+      return res.status(400).json({ message: "Missing required fields." });
     }
 
-    // Update the discount field (assuming you have a discount field in your Product model)
-    product.discount = discount;
+    // Update the product's discount
+    const product = await Product.findOne({ where: { id: itemId, storeId } });
+    if (!product) {
+      return res.status(404).json({ message: "Product not found." });
+    }
 
-    // Save the updated product
+    product.discount = discount;
     await product.save();
 
-    return { success: true };
-  } catch (error) {
-    console.error("Error updating discount in database:", error);
-    return { success: false, message: "Database update error" };
-  }
-};
+    // Create a new discount record
+    const newDiscount = await Discount.create({
+      storeId,
+      productId: itemId,
+      discountPercentage: discount,
+      active: true,
+      startDate: new Date(),
+    });
 
-router.post("/discounts/update", async (req, res) => {
-  const { storeId, itemId, discount } = req.body;
+    // Notify all users about the new discount
+    const users = await User.findAll(); // Fetch all users, or modify this query to target specific users
 
-  if (!storeId || !itemId || !discount) {
-    return res.status(400).json({ message: "Missing required fields" });
-  }
+    const notifications = users.map((user) => ({
+      userId: user.id,
+      discountId: newDiscount.id,
+      message: `New discount on product ${product.name}: ${discount}% off!`,
+    }));
 
-  try {
-    const result = await updateDiscountInDatabase(storeId, itemId, discount);
+    await Notification.bulkCreate(notifications);
 
-    if (result.success) {
-      return res
-        .status(200)
-        .json({ message: "Discount updated successfully!" });
-    } else {
-      return res
-        .status(500)
-        .json({ message: result.message || "Failed to update discount" });
-    }
+    res
+      .status(200)
+      .json({
+        message: "Discount updated and notifications sent successfully!",
+        discount: newDiscount,
+      });
   } catch (error) {
     console.error("Error updating discount:", error);
-    return res
-      .status(500)
-      .json({ message: "An error occurred while updating the discount." });
+    res.status(500).json({ message: "Error updating discount." });
   }
 });
 
