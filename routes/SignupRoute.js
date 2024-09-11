@@ -1,14 +1,14 @@
-const express = require('express');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const Store = require('../models/Store');
+const express = require("express");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+const Store = require("../models/Store");
 
 const router = express.Router();
 
 // Signup route
-router.post('/', async (req, res) => {
-  const { name, email, password, phoneNumber } = req.body;
+router.post("/", async (req, res) => {
+  const { name, email, password, phoneNumber, role = "user" } = req.body;
 
   try {
     // Hash the password
@@ -20,19 +20,23 @@ router.post('/', async (req, res) => {
       email,
       password: hashedPassword,
       phoneNumber,
+      role,
     });
 
-    // Create a store with the new user's ID
-    const store = await Store.create({
-      name: `${name}`, 
-      ownerId: user.id,
-    });
+    let store = null;
+   
+    if (role !== "admin") {
+      store = await Store.create({
+        name: `${name}`,
+        ownerId: user.id,
+      });
+    }
 
     // Generate a JWT token
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET || 'your_jwt_secret',
-      { expiresIn: '1h' }
+      { userId: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET || "your_jwt_secret",
+      { expiresIn: "1h" }
     );
 
     // Send response
@@ -42,12 +46,16 @@ router.post('/', async (req, res) => {
         name: user.name,
         email: user.email,
         phoneNumber: user.phoneNumber,
+        role: user.role,
       },
-      store: {
-        id: store.id,
-        name: store.name,
-        ownerId: store.ownerId,
-      },
+      store: store
+        ? {
+           
+            id: store.id,
+            name: store.name,
+            ownerId: store.ownerId,
+          }
+        : null,
       token,
     });
   } catch (error) {

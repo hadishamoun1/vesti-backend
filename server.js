@@ -19,6 +19,7 @@ const discountRoutes = require("./routes/discountRoutes");
 const storeCategoryRoutes = require("./routes/storeCategoryRoutes");
 const loginRoutes = require("./routes/loginRoute");
 const signupRoutes = require("./routes/SignupRoute");
+const adminRoutes = require("./routes/adminRoute");
 
 // Initialize Express app and HTTP server
 const app = express();
@@ -61,6 +62,9 @@ app.use("/discounts", discountRoutes);
 app.use("/store-categories", storeCategoryRoutes);
 app.use("/login", loginRoutes);
 app.use("/signup", signupRoutes);
+app.use("/admin", adminRoutes);
+
+
 
 // Serve static files from /uploads with appropriate CORS headers
 app.use(
