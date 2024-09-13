@@ -1,6 +1,6 @@
 // models/cart.js
 const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database"); // Adjust the path as needed
+const sequelize = require("../connection/connection"); 
 const User = require("./User");
 const Product = require("./Product");
 const Store = require("./Store");
