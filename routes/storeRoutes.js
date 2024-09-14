@@ -54,7 +54,7 @@ router.get("/nearby", async (req, res) => {
     const latitude = parseFloat(lat);
     const longitude = parseFloat(lon);
     const limitValue = parseInt(limit, 10) || 10; // Defaults to 10 if not provided
-    const radius = parseFloat(req.query.radius); // Defaults to 5000 if not provided
+    const radius = parseFloat(req.query.radius) || 5000; // Defaults to 5000 if not provided
 
     if (isNaN(latitude) || isNaN(longitude)) {
       return res.status(400).json({ error: "Invalid latitude or longitude" });
@@ -72,7 +72,7 @@ router.get("/nearby", async (req, res) => {
     console.log("Query Parameters:", [longitude, latitude, radius, limitValue]);
 
     const query = `
-      SELECT id, name, 
+      SELECT id, name, description,"pictureUrl" ,  -- Correct column name
              ST_Distance(
                ST_SetSRID(ST_GeomFromGeoJSON(location::jsonb), 4326)::geography,
                ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
