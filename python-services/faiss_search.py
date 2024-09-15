@@ -19,7 +19,7 @@ def search_similar_images(query_features: np.ndarray, db_features: np.ndarray) -
     index.add(db_features)
 
     # Search for the most similar feature
-    distances, indices = index.search(query_features, 5)  # Get top 5 similar images
+    distances, indices = index.search(query_features,5)  # Get top 5 similar images
 
     # Return indices of similar images
     return indices.flatten()
