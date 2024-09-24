@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { Notification } = require("../models/index");
+const { Notification, Store } = require("../models/index");
 const admin = require("firebase-admin");
+
 // Create a new notification
 router.post("/", async (req, res) => {
   try {
@@ -14,11 +15,34 @@ router.post("/", async (req, res) => {
 
 // Get all notifications
 router.get("/", async (req, res) => {
+  const { userId } = req.query; // Assuming userId is passed as a query parameter
+
   try {
-    const notifications = await Notification.findAll();
-    res.json(notifications);
+    const notifications = await Notification.findAll({
+      where: { userId }, // Filter notifications by userId
+      include: [
+        {
+          model: Store,
+          attributes: ["name", "pictureUrl"], // Include store name and image
+        },
+      ],
+    });
+
+    const response = notifications.map((notification) => ({
+      id: notification.id,
+      message: notification.message,
+      isRead: notification.isRead,
+      createdAt: notification.createdAt,
+      store: {
+        name: notification.Store.name, // Store name from the relation
+        imageUrl: notification.Store.pictureUrl, // Store image from the relation
+      },
+    }));
+
+    res.json(response);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error("Error fetching notifications:", error);
+    res.status(500).json({ error: "Failed to fetch notifications" });
   }
 });
 
@@ -72,12 +96,10 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-
-
 router.post("/send-notification", async (req, res) => {
   const { title, body, storeId } = req.body;
 
-  console.log("Notification request received:", { title, body});
+  console.log("Notification request received:", { title, body });
 
   try {
     const message = {
@@ -98,13 +120,11 @@ router.post("/send-notification", async (req, res) => {
       .json({ success: true, message: "Notification sent successfully" });
   } catch (error) {
     console.error("Error sending notification:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to send notification",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Failed to send notification",
+      error: error.message,
+    });
   }
 });
 

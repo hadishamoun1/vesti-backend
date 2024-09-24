@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { Order, Product, OrderItem } = require("../models/index");
+const { Order, Product, OrderItem, Store } = require("../models/index");
+//const { Store } = require("express-session");
 
 // Create a new order
 router.post("/", async (req, res) => {
@@ -12,13 +13,45 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Get all orders
 router.get("/", async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: "userId is required" });
+  }
+
   try {
-    const orders = await Order.findAll();
+    const orders = await Order.findAll({
+      where: {
+        userId: userId,
+        status: "paid",
+      },
+      include: [
+        {
+          model: OrderItem,
+          include: [
+            {
+              model: Product,
+              attributes: ["name", "imageUrl"],
+              include: [
+                {
+                  model: Store,
+                  attributes: ["name"],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!orders.length) {
+      return res.status(404).json({ message: "No paid orders found for this user." });
+    }
+
     res.json(orders);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -37,24 +70,24 @@ router.get("/:id", async (req, res) => {
 });
 
 // PUT /orders/update/:orderId
-router.put('/update/:orderId', async (req, res) => {
+router.put("/update/:orderId", async (req, res) => {
   const orderId = req.params.orderId;
 
   try {
     const [affectedRows] = await Order.update(
-      { status: 'paid' },
+      { status: "paid" },
       {
-        where: { id: orderId } // Assuming `id` is the primary key field
+        where: { id: orderId }, // Assuming `id` is the primary key field
       }
     );
 
     if (affectedRows === 0) {
-      return res.status(404).json({ message: 'Order not found' });
+      return res.status(404).json({ message: "Order not found" });
     }
 
-    res.status(200).json({ message: 'Order updated to paid' });
+    res.status(200).json({ message: "Order updated to paid" });
   } catch (error) {
-    res.status(500).json({ message: 'Error updating order', error });
+    res.status(500).json({ message: "Error updating order", error });
   }
 });
 

@@ -7,22 +7,20 @@ const multer = require("multer");
 // Set up storage for the product images
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "productImages/"); // Folder where images will be saved
+    cb(null, "productImages/"); 
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname)); // Save file with unique name
+    cb(null, uniqueSuffix + path.extname(file.originalname)); 
   },
 });
 
-// Initialize multer with storage configuration
 const upload = multer({ storage: storage });
 
-// Route to create a new product with an image upload
 router.post("/create", upload.single("picture"), async (req, res) => {
   try {
-    console.log("Request File:", req.file); // Check if file is received
-    console.log("Request Body:", req.body); // Check if body data is received
+    console.log("Request File:", req.file); 
+    console.log("Request Body:", req.body); 
 
     const {
       storeId,
@@ -61,7 +59,7 @@ router.post("/create", upload.single("picture"), async (req, res) => {
   }
 });
 
-// Get products by category
+
 router.get("/category/:categoryName", async (req, res) => {
   try {
     const { categoryName } = req.params;
@@ -73,7 +71,7 @@ router.get("/category/:categoryName", async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
-// Get products by category and storeId
+
 router.get("/category", async (req, res) => {
   try {
     const { category, storeId } = req.query;
@@ -84,7 +82,7 @@ router.get("/category", async (req, res) => {
       },
     });
 
-    // Ensure that products is an array
+   
     res.json(Array.isArray(products) ? products : []);
   } catch (error) {
     res.status(400).json({ error: error.message });
