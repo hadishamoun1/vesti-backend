@@ -43,12 +43,31 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Update a user by ID
+
+
 router.put("/:id", async (req, res) => {
+  const { name, email, phoneNumber, password } = req.body;
+
   try {
     const user = await User.findByPk(req.params.id);
+    
     if (user) {
-      await user.update(req.body);
+     
+      const updatedData = {
+        name: name || user.name,
+        email: email || user.email,
+        phoneNumber: phoneNumber || user.phoneNumber, 
+      };
+
+      
+      if (password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        updatedData.password = hashedPassword;
+      }
+
+     
+      await user.update(updatedData);
+
       res.json(user);
     } else {
       res.status(404).json({ error: "User not found" });
