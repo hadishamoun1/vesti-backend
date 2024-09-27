@@ -74,7 +74,6 @@ describe("Order Routes", () => {
         .get("/api/orders")
         .query({ userId: "1" });
 
-      // Check if findAll is called with the correct parameters
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual([mockOrder]);

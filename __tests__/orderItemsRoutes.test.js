@@ -1,7 +1,7 @@
 const request = require("supertest");
 const express = require("express");
 const { OrderItem, Order, Product } = require("../models/index");
-const orderItemsRoutes = require("../routes/orderItemRoutes"); // Adjust the path as necessary
+const orderItemsRoutes = require("../routes/orderItemRoutes"); 
 
 const app = express();
 app.use(express.json());

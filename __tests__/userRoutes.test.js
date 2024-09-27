@@ -1,4 +1,4 @@
-// __tests__/userRoutes.test.js
+
 const request = require("supertest");
 const express = require("express");
 const { User } = require("../models/index");
@@ -9,7 +9,6 @@ const app = express();
 app.use(express.json());
 app.use("/api/users", userRoutes);
 
-// Mock the User model
 jest.mock("../models", () => ({
   User: {
     create: jest.fn(),
@@ -19,7 +18,6 @@ jest.mock("../models", () => ({
   },
 }));
 
-// Mock bcrypt
 jest.mock("bcrypt", () => ({
   hash: jest.fn(() => Promise.resolve("hashedpassword")),
 }));
@@ -32,7 +30,7 @@ describe("User Routes", () => {
       id: 1,
       name: "John Doe",
       email: "john@example.com",
-      password: "hashedpassword", // Include the password here for testing
+      password: "hashedpassword", 
       phoneNumber: "1234567890",
       update: jest.fn(),
       destroy: jest.fn(),
@@ -67,7 +65,7 @@ describe("User Routes", () => {
         name: "John Doe",
         email: "john@example.com",
         phoneNumber: "1234567890",
-        password: expect.any(String), // Check if password is a string
+        password: expect.any(String), 
       });
     });
 
@@ -96,7 +94,7 @@ describe("User Routes", () => {
         name: "John Doe",
         email: "john@example.com",
         phoneNumber: "1234567890",
-        password: expect.any(String), // Check if password is a string
+        password: expect.any(String), 
       });
     });
 
@@ -131,7 +129,7 @@ describe("User Routes", () => {
         name: "John Doe",
         email: "john@example.com",
         phoneNumber: "1234567890",
-        password: expect.any(String), // Check if password is a string
+        password: expect.any(String), 
       });
     });
 

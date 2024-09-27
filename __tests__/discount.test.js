@@ -1,13 +1,13 @@
 const request = require("supertest");
 const express = require("express");
-const discountRouter = require("../routes/discountRoutes"); // Adjust this path to where your discount route is
-const { Discount, Notification } = require("../models/index"); // Mock your models
+const discountRouter = require("../routes/discountRoutes");
+const { Discount, Notification } = require("../models/index"); 
 
-jest.mock("../models"); // Mock all models
+jest.mock("../models"); 
 
 const app = express();
 app.use(express.json());
-app.use("/discounts", discountRouter); // Route prefix
+app.use("/discounts", discountRouter); 
 
 describe("Discount Routes", () => {
   let mockDiscount;
@@ -28,10 +28,9 @@ describe("Discount Routes", () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks(); // Clear mock calls after each test
+    jest.clearAllMocks();
   });
 
-  // POST /discounts/
   it("should create a new discount", async () => {
     Discount.create.mockResolvedValue(mockDiscount);
 
@@ -43,7 +42,6 @@ describe("Discount Routes", () => {
     expect(response.body).toHaveProperty("id", 1);
   });
 
-  // GET /discounts/
   it("should return all discounts", async () => {
     Discount.findAll.mockResolvedValue([mockDiscount]);
 
@@ -54,7 +52,6 @@ describe("Discount Routes", () => {
     expect(response.body[0]).toHaveProperty("id", 1);
   });
 
-  // PUT /discounts/:id
   it("should update a discount by ID", async () => {
     Discount.findByPk.mockResolvedValue(mockDiscount);
 
@@ -66,7 +63,6 @@ describe("Discount Routes", () => {
     expect(mockDiscount.update).toHaveBeenCalledWith({ active: false });
   });
 
-  // DELETE /discounts/:id
   it("should delete a discount by ID", async () => {
     Discount.findByPk.mockResolvedValue(mockDiscount);
 
@@ -76,7 +72,6 @@ describe("Discount Routes", () => {
     expect(mockDiscount.destroy).toHaveBeenCalled();
   });
 
-  // GET /discounts/active?storeId=123
   it("should return active discounts by storeId", async () => {
     Discount.findAll.mockResolvedValue([mockDiscount]);
 
@@ -87,7 +82,6 @@ describe("Discount Routes", () => {
     expect(response.body[0]).toHaveProperty("storeId", 123);
   });
 
-  // POST /discounts/disable
   it("should disable a discount and remove notifications", async () => {
     Discount.findByPk.mockResolvedValue(mockDiscount);
     Notification.destroy.mockResolvedValue(1);
@@ -103,7 +97,6 @@ describe("Discount Routes", () => {
     });
   });
 
-  // GET /discounts/history?storeId=123
   it("should return inactive discounts by storeId", async () => {
     mockDiscount.active = false;
     Discount.findAll.mockResolvedValue([mockDiscount]);

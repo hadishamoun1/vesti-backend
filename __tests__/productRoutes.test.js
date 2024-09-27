@@ -7,7 +7,6 @@ const app = express();
 app.use(express.json());
 app.use("/api/products", productRoutes);
 
-// Mock the Product and Store models
 jest.mock("../models", () => ({
   Product: {
     create: jest.fn(),
@@ -27,14 +26,14 @@ describe("Product Routes", () => {
 
   beforeEach(() => {
     mockStore = {
-      id: "1", // Ensure this is a string
+      id: "1", 
       name: "Test Store",
       ownerId: 1,
     };
 
     mockProduct = {
-      id: "1", // Ensure this is a string
-      storeId: "1", // Ensure this is a string
+      id: "1", 
+      storeId: "1", 
       name: "Test Product",
       description: "This is a test product.",
       price: 29.99,
@@ -50,7 +49,7 @@ describe("Product Routes", () => {
 
   describe("POST /api/products/create", () => {
     it("should return 400 if required fields are missing", async () => {
-      const response = await request(app).post("/api/products/create").send({}); // Send empty body
+      const response = await request(app).post("/api/products/create").send({}); 
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({ message: "All fields are required." });
@@ -63,7 +62,7 @@ describe("Product Routes", () => {
 
       const response = await request(app).get("/api/products/1");
 
-      expect(Product.findByPk).toHaveBeenCalledWith("1"); // Ensure this is a string
+      expect(Product.findByPk).toHaveBeenCalledWith("1"); 
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual(mockProduct);
     });
@@ -73,9 +72,9 @@ describe("Product Routes", () => {
 
       const response = await request(app).get("/api/products/999");
 
-      expect(Product.findByPk).toHaveBeenCalledWith("999"); // Ensure this is a string
+      expect(Product.findByPk).toHaveBeenCalledWith("999");
       expect(response.statusCode).toBe(404);
-      expect(response.body).toEqual({ error: "Product not found" }); // Changed from message to error
+      expect(response.body).toEqual({ error: "Product not found" }); 
     });
   });
 
@@ -87,9 +86,9 @@ describe("Product Routes", () => {
         .put("/api/products/999")
         .send({ name: "Updated Product" });
 
-      expect(Product.findByPk).toHaveBeenCalledWith("999"); // Ensure this is a string
+      expect(Product.findByPk).toHaveBeenCalledWith("999");
       expect(response.statusCode).toBe(404);
-      expect(response.body).toEqual({ error: "Product not found" }); // Changed from message to error
+      expect(response.body).toEqual({ error: "Product not found" }); 
     });
   });
 
@@ -101,9 +100,9 @@ describe("Product Routes", () => {
 
       const response = await request(app).delete("/api/products/999");
 
-      expect(Product.findByPk).toHaveBeenCalledWith("999"); // Ensure this is a string
+      expect(Product.findByPk).toHaveBeenCalledWith("999"); 
       expect(response.statusCode).toBe(404);
-      expect(response.body).toEqual({ error: "Product not found" }); // Changed from message to error
+      expect(response.body).toEqual({ error: "Product not found" }); 
     });
   });
 });
